@@ -1,28 +1,43 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Crystal Grid</title>
+    <title>Crystal Stack</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+
+<!-- HOME -->
+
 <div id="homeScreen">
+
     <img src="logo.png" class="logo">
 
     <div class="ad">
         Advertisement
     </div>
 
-    <img src="start.png" class="menuButton" onclick="startGame()">
+    <img src="start.png" 
+    class="menuButton"
+    onclick="startGame()">
 
-    <img src="settings.png" class="menuButton" onclick="openSettings()">
+
+    <img src="settings.png"
+    class="menuButton"
+    onclick="openSettings()">
+
 </div>
 
+
+
+<!-- SETTINGS -->
 
 <div id="settingsScreen" class="hidden">
 
     <div class="credits">
+
         <h2>Credits</h2>
 
         Founder: Andrew S<br>
@@ -35,30 +50,45 @@
 
     </div>
 
-    <button onclick="goHome()">Back</button>
+
+    <button onclick="goHome()">
+        Back
+    </button>
+
 
 </div>
 
 
+
+
+<!-- GAME -->
+
 <div id="gameScreen" class="hidden">
+
 
     <div class="ad">
         Advertisement
     </div>
 
+
     <h2>
-        Score: <span id="score">0</span>
+        Score:
+        <span id="score">0</span>
     </h2>
 
 
     <div id="board"></div>
 
 
-   <div id="pieces"></div>
+    <div id="pieces"></div>
+
+
 </div>
+
 
 
 <script src="script.js"></script>
 
 </body>
+
 </html>
