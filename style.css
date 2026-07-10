@@ -218,3 +218,47 @@ button {
     display:none !important;
 
 }
+
+/* PIECES */
+
+#pieces {
+    display:flex;
+    justify-content:center;
+    gap:25px;
+    margin-top:20px;
+}
+
+
+.piece {
+    display:grid;
+    gap:3px;
+    cursor:pointer;
+    padding:10px;
+}
+
+
+.miniBlock {
+
+    width:25px;
+    height:25px;
+
+    background:cyan;
+
+    border-radius:5px;
+
+}
+
+
+.emptyBlock {
+
+    width:25px;
+    height:25px;
+
+}
+
+
+.placedBlock {
+
+    background:cyan !important;
+
+}
