@@ -7,7 +7,7 @@ let board = [];
 let selectedPiece = null;
 
 let selectedElement = null;
-
+let ghostCells = [];
 
 const shapes = [
 
@@ -51,6 +51,83 @@ const shapes = [
 
 
 
+
+
+
+
+
+function showGhost(row,col){
+
+
+clearGhost();
+
+
+if(!selectedPiece)return;
+
+
+// center piece
+
+row -= Math.floor(selectedPiece.length/2);
+
+col -= Math.floor(selectedPiece[0].length/2);
+
+
+
+if(!canPlace(row,col,selectedPiece)){
+    return;
+}
+
+
+
+for(let r=0;r<selectedPiece.length;r++){
+
+for(let c=0;c<selectedPiece[r].length;c++){
+
+
+if(selectedPiece[r][c]){
+
+
+let index =
+(row+r)*size+(col+c);
+
+
+let cell =
+document.querySelectorAll(".cell")[index];
+
+
+cell.classList.add("ghostBlock");
+
+
+ghostCells.push(cell);
+
+
+}
+
+}
+
+}
+
+
+}
+
+
+
+
+
+function clearGhost(){
+
+
+ghostCells.forEach(cell=>{
+
+cell.classList.remove("ghostBlock");
+
+});
+
+
+ghostCells=[];
+
+
+}
 
 
 function startGame(){
@@ -201,6 +278,8 @@ ghost,
 
 
 piece.addEventListener("dragend",()=>{
+
+clearGhost();
 
 selectedPiece=null;
 
@@ -589,3 +668,32 @@ gameScreen.classList.add("hidden");
 homeScreen.classList.remove("hidden");
 
 }
+
+
+cell.addEventListener("dragover",e=>{
+
+e.preventDefault();
+
+
+showGhost(
+Number(cell.dataset.row),
+Number(cell.dataset.col)
+);
+
+
+});
+
+
+cell.addEventListener("drop",()=>{
+
+
+clearGhost();
+
+
+placePiece(
+Number(cell.dataset.row),
+Number(cell.dataset.col)
+);
+
+
+});
