@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crystal Grid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="homeScreen">
+    <img src="logo.png" class="logo">
+
+    <div class="ad">
+        Advertisement
+    </div>
+
+    <img src="start.png" class="menuButton" onclick="startGame()">
+
+    <img src="settings.png" class="menuButton" onclick="openSettings()">
+</div>
+
+
+<div id="settingsScreen" class="hidden">
+
+    <div class="credits">
+        <h2>Credits</h2>
+
+        Founder: Andrew S<br>
+        Co-Founder: Jackson S<br><br>
+
+        -----------------------------<br><br>
+
+        Artist: Jackson S<br>
+        Lead Developer: Jackson S
+
+    </div>
+
+    <button onclick="goHome()">Back</button>
+
+</div>
+
+
+<div id="gameScreen" class="hidden">
+
+    <div class="ad">
+        Advertisement
+    </div>
+
+    <h2>
+        Score: <span id="score">0</span>
+    </h2>
+
+
+    <div id="board"></div>
+
+
+    <div id="pieces">
+        <button onclick="placePiece()">Piece</button>
+        <button onclick="placePiece()">Piece</button>
+        <button onclick="placePiece()">Piece</button>
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
