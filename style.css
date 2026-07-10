@@ -270,3 +270,11 @@ display:none !important;
 .miniBlock {
     pointer-events:none;
 }
+
+.ghostBlock {
+
+    background:rgba(0,255,255,0.35);
+
+    border-radius:5px;
+
+}
