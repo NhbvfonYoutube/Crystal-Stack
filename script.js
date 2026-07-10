@@ -146,18 +146,57 @@ piece.draggable=true;
 
 piece.shape=shape;
 
+function drawPiece(element,shape){
+
+element.innerHTML="";
+
+element.style.gridTemplateColumns =
+`repeat(${shape[0].length},22px)`;
 
 
-drawPiece(piece,shape);
+shape.forEach(row=>{
+
+row.forEach(block=>{
+
+let square=document.createElement("div");
 
 
+if(block){
 
-piece.addEventListener("dragstart",()=>{
+square.className="miniBlock";
 
-selectedPiece=shape;
+}
+else{
+
+square.className="emptyBlock";
+
+}
+
+
+element.appendChild(square);
+
 
 });
 
+});
+
+
+}
+
+piece.addEventListener("dragstart",()=>{
+
+selectedPiece = shape;
+
+piece.style.opacity="0.5";
+
+});
+
+
+piece.addEventListener("dragend",()=>{
+
+piece.style.opacity="1";
+
+});
 
 area.appendChild(piece);
 
