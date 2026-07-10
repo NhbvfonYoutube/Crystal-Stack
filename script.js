@@ -6,6 +6,7 @@ let board = [];
 
 let selectedPiece = null;
 
+let selectedElement = null;
 
 
 const shapes = [
@@ -14,37 +15,31 @@ const shapes = [
 [1,1,1,1]
 ],
 
-
 [
 [1,1],
 [1,1]
 ],
 
-
 [
 [1,0],
 [1,0],
 [1,1]
 ],
-
 
 [
 [1,1,1],
 [0,1,0]
 ],
 
-
 [
 [0,1,1],
 [1,1,0]
 ],
 
-
 [
 [1,1,0],
 [0,1,1]
 ],
-
 
 [
 [0,1],
@@ -57,7 +52,6 @@ const shapes = [
 
 
 
-// START
 
 function startGame(){
 
@@ -78,7 +72,8 @@ updateScore();
 
 
 
-// BOARD
+
+
 
 function createBoard(){
 
@@ -87,7 +82,6 @@ let element=document.getElementById("board");
 element.innerHTML="";
 
 board=[];
-
 
 
 for(let r=0;r<size;r++){
@@ -99,7 +93,6 @@ for(let c=0;c<size;c++){
 
 
 let cell=document.createElement("div");
-
 
 cell.className="cell";
 
@@ -120,7 +113,10 @@ e.preventDefault();
 
 cell.addEventListener("drop",()=>{
 
-placePiece(r,c);
+placePiece(
+Number(cell.dataset.row),
+Number(cell.dataset.col)
+);
 
 });
 
@@ -142,15 +138,12 @@ board[r][c]=0;
 
 
 
-// CREATE PIECES
 
 function generatePieces(){
 
 let area=document.getElementById("pieces");
 
-
 area.innerHTML="";
-
 
 
 for(let i=0;i<3;i++){
@@ -168,7 +161,6 @@ piece.className="piece";
 
 piece.draggable=true;
 
-
 piece.shape=shape;
 
 
@@ -177,9 +169,42 @@ drawPiece(piece,shape);
 
 
 
-piece.addEventListener("dragstart",()=>{
+
+piece.addEventListener("dragstart",(e)=>{
+
 
 selectedPiece=shape;
+
+selectedElement=piece;
+
+
+
+// Stop browser shrinking preview
+
+let ghost=document.createElement("div");
+
+ghost.style.width="70px";
+
+ghost.style.height="70px";
+
+
+e.dataTransfer.setDragImage(
+ghost,
+35,
+35
+);
+
+
+});
+
+
+
+
+piece.addEventListener("dragend",()=>{
+
+selectedPiece=null;
+
+selectedElement=null;
 
 });
 
@@ -190,19 +215,25 @@ area.appendChild(piece);
 
 }
 
-
 }
+
+
 
 
 
 
 function drawPiece(piece,shape){
 
-piece.style.gridTemplateColumns =
+
+piece.innerHTML="";
+
+
+piece.style.gridTemplateColumns=
 `repeat(${shape[0].length},22px)`;
 
 
 shape.forEach(row=>{
+
 
 row.forEach(block=>{
 
@@ -210,17 +241,8 @@ row.forEach(block=>{
 let square=document.createElement("div");
 
 
-if(block){
-
-square.className="miniBlock";
-
-}
-
-else{
-
-square.className="emptyBlock";
-
-}
+square.className =
+block ? "miniBlock":"emptyBlock";
 
 
 piece.appendChild(square);
@@ -238,50 +260,76 @@ piece.appendChild(square);
 
 
 
-// PLACE
+
+
+function canPlace(row,col,shape){
+
+
+for(let r=0;r<shape.length;r++){
+
+for(let c=0;c<shape[r].length;c++){
+
+
+if(shape[r][c]){
+
+
+if(
+row+r>=size ||
+col+c>=size ||
+board[row+r][col+c]
+){
+
+return false;
+
+}
+
+
+}
+
+}
+
+}
+
+
+return true;
+
+}
+
+
+
+
+
+
+
 
 function placePiece(row,col){
+
 
 if(!selectedPiece)return;
 
 
 
-let h=selectedPiece.length;
+// Center piece under cursor
 
-let w=selectedPiece[0].length;
+row -= Math.floor(selectedPiece.length/2);
 
-
-
-for(let r=0;r<h;r++){
-
-for(let c=0;c<w;c++){
+col -= Math.floor(selectedPiece[0].length/2);
 
 
-if(selectedPiece[r][c]){
 
-
-if(row+r>=size ||
-col+c>=size ||
-board[row+r][col+c]){
+if(!canPlace(row,col,selectedPiece)){
 
 return;
 
 }
 
 
-}
-
-
-}
-
-}
 
 
 
+for(let r=0;r<selectedPiece.length;r++){
 
-for(let r=0;r<h;r++){
-
-for(let c=0;c<w;c++){
+for(let c=0;c<selectedPiece[r].length;c++){
 
 
 if(selectedPiece[r][c]){
@@ -297,7 +345,6 @@ document
 .querySelectorAll(".cell")[index]
 .classList.add("placedBlock");
 
-
 score+=10;
 
 
@@ -309,34 +356,29 @@ score+=10;
 }
 
 
-removePiece();
+
+removeSelected();
+
+clearLines();
+
+checkGameOver();
 
 updateScore();
 
 
-selectedPiece=null;
-
-
 }
 
 
 
 
 
-function removePiece(){
 
-let pieces=document.querySelectorAll(".piece");
+function removeSelected(){
 
 
-for(let p of pieces){
+if(selectedElement){
 
-if(p.shape===selectedPiece){
-
-p.remove();
-
-break;
-
-}
+selectedElement.remove();
 
 }
 
@@ -348,7 +390,169 @@ generatePieces();
 }
 
 
+selectedPiece=null;
+
+selectedElement=null;
+
+
 }
+
+
+
+
+
+
+function clearLines(){
+
+
+let cleared=[];
+
+
+// rows
+
+for(let r=0;r<size;r++){
+
+
+let full=true;
+
+
+for(let c=0;c<size;c++){
+
+if(!board[r][c]) full=false;
+
+}
+
+
+if(full) cleared.push(["row",r]);
+
+
+}
+
+
+
+// columns
+
+for(let c=0;c<size;c++){
+
+
+let full=true;
+
+
+for(let r=0;r<size;r++){
+
+if(!board[r][c]) full=false;
+
+}
+
+
+if(full) cleared.push(["col",c]);
+
+
+}
+
+
+
+
+cleared.forEach(line=>{
+
+
+if(line[0]=="row"){
+
+
+let r=line[1];
+
+
+for(let c=0;c<size;c++){
+
+board[r][c]=0;
+
+document
+.querySelectorAll(".cell")[r*size+c]
+.classList.remove("placedBlock");
+
+}
+
+
+}
+
+
+
+else{
+
+
+let c=line[1];
+
+
+for(let r=0;r<size;r++){
+
+board[r][c]=0;
+
+
+document
+.querySelectorAll(".cell")[r*size+c]
+.classList.remove("placedBlock");
+
+}
+
+
+}
+
+
+
+score+=100;
+
+
+});
+
+
+}
+
+
+
+
+
+
+
+
+function checkGameOver(){
+
+
+let pieces=document.querySelectorAll(".piece");
+
+
+for(let piece of pieces){
+
+
+for(let r=0;r<size;r++){
+
+for(let c=0;c<size;c++){
+
+
+if(canPlace(r,c,piece.shape)){
+
+return;
+
+}
+
+
+}
+
+
+}
+
+
+}
+
+
+
+alert("Game Over!");
+
+
+
+}
+
+
+
 
 
 
@@ -363,6 +567,7 @@ document.getElementById("score").innerText=score;
 
 
 
+
 function openSettings(){
 
 homeScreen.classList.add("hidden");
@@ -370,6 +575,7 @@ homeScreen.classList.add("hidden");
 settingsScreen.classList.remove("hidden");
 
 }
+
 
 
 
