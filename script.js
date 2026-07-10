@@ -124,6 +124,12 @@ board[r][c]=0;
 
 function generatePieces(){
 
+cell.onclick=function(){
+
+placeBlock(row,col);
+
+};
+  
 let area=document.getElementById("pieces");
 
 area.innerHTML="";
