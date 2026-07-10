@@ -278,3 +278,14 @@ display:none !important;
     border-radius:5px;
 
 }
+
+
+.ghostBlock {
+    background: rgba(0,255,255,0.4) !important;
+    border:2px solid cyan;
+}
+
+.piece {
+    touch-action:none;
+    user-select:none;
+}
