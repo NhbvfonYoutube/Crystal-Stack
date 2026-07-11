@@ -55,6 +55,7 @@ const shapes = [
 
 
 
+
 // START GAME
 
 function startGame(){
@@ -70,6 +71,11 @@ document.getElementById("gameScreen")
 score = 0;
 
 
+document
+.getElementById("gameOverScreen")
+.classList.add("hidden");
+
+
 createBoard();
 
 generatePieces();
@@ -77,7 +83,6 @@ generatePieces();
 updateScore();
 
 }
-
 
 
 
@@ -131,8 +136,8 @@ Number(cell.dataset.row),
 Number(cell.dataset.col)
 );
 
-
 });
+
 
 
 
@@ -153,6 +158,7 @@ Number(cell.dataset.col)
 });
 
 
+
 boardElement.appendChild(cell);
 
 
@@ -164,13 +170,16 @@ board[r][c]=0;
 
 }
 
+
 }
 
 
 
 
 
-// GENERATE 3 PIECES
+
+
+// CREATE PIECES
 
 function generatePieces(){
 
@@ -193,11 +202,11 @@ Math.floor(Math.random()*shapes.length)
 
 
 
-let piece=document.createElement("div");
+let piece =
+document.createElement("div");
 
 
 piece.className="piece";
-
 
 piece.draggable=true;
 
@@ -207,7 +216,6 @@ piece.shape=shape;
 
 
 drawPiece(piece,shape);
-
 
 
 
@@ -243,17 +251,22 @@ ghost,
 
 
 
+
 piece.addEventListener(
 "dragend",
 function(){
 
+
 clearGhost();
+
 
 selectedPiece=null;
 
 selectedElement=null;
 
+
 });
+
 
 
 area.appendChild(piece);
@@ -268,7 +281,9 @@ area.appendChild(piece);
 
 
 
-// DRAW PIECE
+
+
+// DRAW PIECES
 
 function drawPiece(piece,shape){
 
@@ -292,17 +307,10 @@ document.createElement("div");
 
 
 
-if(block){
-
-square.className="miniBlock";
-
-}
-
-else{
-
-square.className="emptyBlock";
-
-}
+square.className =
+block ?
+"miniBlock":
+"emptyBlock";
 
 
 
@@ -321,7 +329,9 @@ piece.appendChild(square);
 
 
 
-// CHECK IF FITS
+
+
+// CHECK PLACEMENT
 
 function canPlace(row,col,shape){
 
@@ -337,11 +347,17 @@ if(shape[r][c]){
 
 
 if(
+
 row+r < 0 ||
+
 col+c < 0 ||
+
 row+r >= size ||
+
 col+c >= size ||
+
 board[row+r][col+c]
+
 ){
 
 return false;
@@ -361,6 +377,8 @@ return false;
 return true;
 
 }
+
+
 
 
 
@@ -395,6 +413,7 @@ for(let r=0;r<selectedPiece.length;r++){
 for(let c=0;c<selectedPiece[r].length;c++){
 
 
+
 if(selectedPiece[r][c]){
 
 
@@ -411,10 +430,10 @@ board[row+r][col+c]=1;
 
 
 
-refreshBoard();
-
-
 score += 10;
+
+
+refreshBoard();
 
 
 removePiece();
@@ -423,10 +442,10 @@ removePiece();
 clearLines();
 
 
-checkGameOver();
-
-
 updateScore();
+
+
+setTimeout(checkGameOver,100);
 
 
 }
@@ -436,7 +455,8 @@ updateScore();
 
 
 
-// REMOVE USED PIECE
+
+// REMOVE PIECE
 
 function removePiece(){
 
@@ -446,6 +466,12 @@ if(selectedElement){
 selectedElement.remove();
 
 }
+
+
+
+selectedPiece=null;
+
+selectedElement=null;
 
 
 
@@ -466,7 +492,7 @@ generatePieces();
 
 
 
-// GHOST PREVIEW
+// GHOST
 
 function showGhost(row,col){
 
@@ -527,12 +553,15 @@ ghostCells.push(cell);
 
 
 
+
 function clearGhost(){
 
 
 ghostCells.forEach(cell=>{
 
+
 cell.classList.remove("ghostBlock");
+
 
 });
 
@@ -548,14 +577,15 @@ ghostCells=[];
 
 
 
+
 // CLEAR LINES
 
 function clearLines(){
 
 
-let clearRows=[];
+let rows=[];
 
-let clearCols=[];
+let cols=[];
 
 
 
@@ -579,11 +609,10 @@ full=false;
 
 
 if(full)
-clearRows.push(r);
+rows.push(r);
 
 
 }
-
 
 
 
@@ -608,7 +637,7 @@ full=false;
 
 
 if(full)
-clearCols.push(c);
+cols.push(c);
 
 
 }
@@ -616,7 +645,9 @@ clearCols.push(c);
 
 
 
-clearRows.forEach(r=>{
+
+
+rows.forEach(r=>{
 
 
 for(let c=0;c<size;c++){
@@ -631,7 +662,7 @@ board[r][c]=0;
 
 
 
-clearCols.forEach(c=>{
+cols.forEach(c=>{
 
 
 for(let r=0;r<size;r++){
@@ -647,11 +678,11 @@ board[r][c]=0;
 
 
 
-if(clearRows.length || clearCols.length){
+if(rows.length || cols.length){
 
 
 score +=
-(clearRows.length + clearCols.length)*100;
+(rows.length + cols.length) * 100;
 
 
 }
@@ -669,7 +700,7 @@ refreshBoard();
 
 
 
-// REFRESH BOARD
+// UPDATE BOARD
 
 function refreshBoard(){
 
@@ -713,6 +744,7 @@ board[r][c]
 
 
 
+
 // GAME OVER
 
 function checkGameOver(){
@@ -730,6 +762,7 @@ for(let r=0;r<size;r++){
 
 
 for(let c=0;c<size;c++){
+
 
 
 if(canPlace(r,c,piece.shape)){
@@ -751,12 +784,51 @@ return;
 
 
 
-alert(
-"Game Over!\nScore: "+score
-);
+
+
+document
+.getElementById("finalScore")
+.innerText=score;
+
+
+
+document
+.getElementById("gameOverScreen")
+.classList.remove("hidden");
 
 
 }
+
+
+
+
+
+
+
+
+// RESTART
+
+function restartGame(){
+
+
+document
+.getElementById("gameOverScreen")
+.classList.add("hidden");
+
+
+score=0;
+
+
+createBoard();
+
+generatePieces();
+
+updateScore();
+
+
+}
+
+
 
 
 
@@ -766,10 +838,14 @@ alert(
 
 function updateScore(){
 
-document.getElementById("score")
+document
+.getElementById("score")
 .innerText=score;
 
 }
+
+
+
 
 
 
@@ -778,29 +854,41 @@ document.getElementById("score")
 
 function openSettings(){
 
-document.getElementById("homeScreen")
+
+document
+.getElementById("homeScreen")
 .classList.add("hidden");
 
 
-document.getElementById("settingsScreen")
+
+document
+.getElementById("settingsScreen")
 .classList.remove("hidden");
+
 
 }
 
 
 
 
+
 function goHome(){
 
-document.getElementById("settingsScreen")
+
+document
+.getElementById("settingsScreen")
 .classList.add("hidden");
 
 
-document.getElementById("gameScreen")
+document
+.getElementById("gameScreen")
 .classList.add("hidden");
 
 
-document.getElementById("homeScreen")
+
+document
+.getElementById("homeScreen")
 .classList.remove("hidden");
+
 
 }
