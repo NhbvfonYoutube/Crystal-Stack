@@ -62,53 +62,42 @@
 
 
 <!-- GAME -->
-
 <div id="gameScreen" class="hidden">
-
 
     <div class="ad">
         Advertisement
     </div>
-
 
     <h2>
         Score:
         <span id="score">0</span>
     </h2>
 
-
     <div id="board"></div>
-
 
     <div id="pieces"></div>
 
 
-</div>
+    <div id="gameOverScreen" class="hidden">
 
+        <div class="gameOverBox">
 
-<!-- GAME OVER -->
+            <h1>Game Over</h1>
 
-<div id="gameOverScreen" class="hidden">
+            <p>
+                Score:
+                <span id="finalScore">0</span>
+            </p>
 
-    <div class="gameOverBox">
+            <button onclick="restartGame()">
+                Restart
+            </button>
 
-        <h1>Game Over</h1>
+            <button onclick="goHome()">
+                Home
+            </button>
 
-        <h2>
-            Score:
-            <span id="finalScore">0</span>
-        </h2>
-
-
-        <button onclick="restartGame()">
-            Restart
-        </button>
-
-
-        <button onclick="goHome()">
-            Home
-        </button>
-
+        </div>
 
     </div>
 
