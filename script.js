@@ -383,15 +383,20 @@ board[row+r][col+c]=1;
 
 score+=10;
 
-removePiece();
+refresh();
+
+  removePiece();
 
 clearLines();
 
-refresh();
-
 updateScore();
 
-checkGameOver();
+
+setTimeout(function(){
+
+    checkGameOver();
+
+},100);
 
 
 }
@@ -505,23 +510,31 @@ ghostCells=[];
 
 function removePiece(){
 
-selectedElement.remove();
+    if(selectedElement){
+        selectedElement.remove();
+    }
 
 
-if(document.querySelectorAll(".piece").length===0){
+    selectedPiece = null;
+    selectedElement = null;
 
-generatePieces();
+
+
+    setTimeout(function(){
+
+        let remaining =
+        document.querySelectorAll(".piece").length;
+
+
+        if(remaining === 0){
+
+            generatePieces();
+
+        }
+
+    }, 50);
 
 }
-
-
-selectedPiece=null;
-
-}
-
-
-
-
 
 // CLEAR
 
