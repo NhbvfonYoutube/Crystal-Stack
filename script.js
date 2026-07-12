@@ -717,3 +717,9 @@ function openPrivacy(){
 window.location.href="privacy.html";
 
 }
+
+function openTerms(){
+
+window.location.href="terms.html";
+
+}
