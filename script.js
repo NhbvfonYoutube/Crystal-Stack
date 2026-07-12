@@ -892,3 +892,9 @@ document
 
 
 }
+
+function openPrivacy(){
+
+window.location.href="privacy.html";
+
+}
