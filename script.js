@@ -10,7 +10,8 @@ let selectedElement = null;
 
 let ghostCells = [];
 
-
+let touchClone = null;
+let dragging = false;
 
 const shapes = [
 
@@ -80,6 +81,196 @@ createBoard();
 
 generatePieces();
 
+document.addEventListener("touchmove",function(e){
+
+
+if(!dragging)
+return;
+
+
+e.preventDefault();
+
+
+moveTouch(e.touches[0]);
+
+
+},{passive:false});
+
+
+
+
+
+function moveTouch(touch){
+
+
+if(!touchClone)
+return;
+
+
+
+touchClone.style.left =
+touch.clientX-40+"px";
+
+
+touchClone.style.top =
+touch.clientY-40+"px";
+
+
+
+let target =
+document.elementFromPoint(
+touch.clientX,
+touch.clientY
+);
+
+
+
+if(target &&
+target.classList.contains("cell")){
+
+
+showGhost(
+Number(target.dataset.row),
+Number(target.dataset.col)
+);
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+document.addEventListener("touchend",function(e){
+
+
+if(!dragging)
+return;
+
+
+
+let touch =
+e.changedTouches[0];
+
+
+let target =
+document.elementFromPoint(
+touch.clientX,
+touch.clientY
+);
+
+
+
+if(target &&
+target.classList.contains("cell")){
+
+
+placePiece(
+Number(target.dataset.row),
+Number(target.dataset.col)
+);
+
+
+}
+
+
+
+if(touchClone){
+
+touchClone.remove();
+
+touchClone=null;
+
+}
+
+
+
+clearGhost();
+
+
+dragging=false;
+
+
+});
+
+  document.addEventListener("mousemove",function(e){
+
+
+if(!dragging)
+return;
+
+
+
+let target =
+document.elementFromPoint(
+e.clientX,
+e.clientY
+);
+
+
+
+if(target &&
+target.classList.contains("cell")){
+
+
+showGhost(
+Number(target.dataset.row),
+Number(target.dataset.col)
+);
+
+
+}
+
+
+});
+
+
+
+
+
+document.addEventListener("mouseup",function(e){
+
+
+if(!dragging)
+return;
+
+
+
+let target =
+document.elementFromPoint(
+e.clientX,
+e.clientY
+);
+
+
+
+if(target &&
+target.classList.contains("cell")){
+
+
+placePiece(
+Number(target.dataset.row),
+Number(target.dataset.col)
+);
+
+
+}
+
+
+
+clearGhost();
+
+
+dragging=false;
+
+
+});
+  
 updateScore();
 
 }
@@ -183,7 +374,6 @@ board[r][c]=0;
 
 function generatePieces(){
 
-
 let area =
 document.getElementById("pieces");
 
@@ -208,64 +398,63 @@ document.createElement("div");
 
 piece.className="piece";
 
-piece.draggable=true;
-
-
 piece.shape=shape;
-
 
 
 drawPiece(piece,shape);
 
 
 
-piece.addEventListener(
-"dragstart",
-function(e){
+// PC MOUSE
+
+piece.addEventListener("mousedown", function(e){
+
+selectedPiece=shape;
+
+selectedElement=piece;
+
+dragging=true;
+
+
+});
+
+
+
+// MOBILE TOUCH
+
+piece.addEventListener("touchstart", function(e){
+
+e.preventDefault();
 
 
 selectedPiece=shape;
 
 selectedElement=piece;
 
-
-
-let ghost =
-document.createElement("div");
-
-
-ghost.style.width="1px";
-
-ghost.style.height="1px";
-
-
-e.dataTransfer.setDragImage(
-ghost,
-0,
-0
-);
-
-
-});
+dragging=true;
 
 
 
+touchClone = piece.cloneNode(true);
 
 
-piece.addEventListener(
-"dragend",
-function(){
+touchClone.style.position="fixed";
+
+touchClone.style.pointerEvents="none";
+
+touchClone.style.opacity="0.8";
+
+touchClone.style.zIndex="9999";
 
 
-clearGhost();
+document.body.appendChild(touchClone);
 
 
-selectedPiece=null;
 
-selectedElement=null;
+moveTouch(e.touches[0]);
 
 
-});
+},{passive:false});
 
 
 
@@ -274,14 +463,7 @@ area.appendChild(piece);
 
 }
 
-
 }
-
-
-
-
-
-
 
 // DRAW PIECES
 
