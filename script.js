@@ -5,360 +5,80 @@ const size = 8;
 let board = [];
 
 let selectedPiece = null;
-
 let selectedElement = null;
 
-let ghostCells = [];
-
-let touchClone = null;
 let dragging = false;
+let ghostCells = [];
+let dragClone = null;
+
 
 const shapes = [
-
-[
-[1,1,1,1]
-],
-
-[
-[1,1],
-[1,1]
-],
-
-[
-[1,0],
-[1,0],
-[1,1]
-],
-
-[
-[1,1,1],
-[0,1,0]
-],
-
-[
-[0,1,1],
-[1,1,0]
-],
-
-[
-[1,1,0],
-[0,1,1]
-],
-
-[
-[0,1],
-[0,1],
-[1,1]
-]
-
+[[1,1,1,1]],
+[[1,1],[1,1]],
+[[1,0],[1,1]],
+[[1,1,1],[0,1,0]],
+[[1,1,0],[0,1,1]],
+[[1],[1],[1]],
+[[1,1,1]]
 ];
 
 
 
-
-
-// START GAME
+// START
 
 function startGame(){
 
-document.getElementById("homeScreen")
-.classList.add("hidden");
+document.getElementById("homeScreen").classList.add("hidden");
 
+document.getElementById("gameScreen").classList.remove("hidden");
 
-document.getElementById("gameScreen")
-.classList.remove("hidden");
+document.getElementById("gameOverScreen").classList.add("hidden");
 
-
-score = 0;
-
-
-document
-.getElementById("gameOverScreen")
-.classList.add("hidden");
-
+score=0;
 
 createBoard();
 
 generatePieces();
 
-document.addEventListener("touchmove",function(e){
-
-
-if(!dragging)
-return;
-
-
-e.preventDefault();
-
-
-moveTouch(e.touches[0]);
-
-
-},{passive:false});
-
-
-
-
-
-function moveTouch(touch){
-
-
-if(!touchClone)
-return;
-
-
-
-touchClone.style.left =
-touch.clientX-40+"px";
-
-
-touchClone.style.top =
-touch.clientY-40+"px";
-
-
-
-let target =
-document.elementFromPoint(
-touch.clientX,
-touch.clientY
-);
-
-
-
-if(target &&
-target.classList.contains("cell")){
-
-
-showGhost(
-Number(target.dataset.row),
-Number(target.dataset.col)
-);
-
-
-}
-
-
-}
-
-
-
-
-
-
-
-document.addEventListener("touchend",function(e){
-
-
-if(!dragging)
-return;
-
-
-
-let touch =
-e.changedTouches[0];
-
-
-let target =
-document.elementFromPoint(
-touch.clientX,
-touch.clientY
-);
-
-
-
-if(target &&
-target.classList.contains("cell")){
-
-
-placePiece(
-Number(target.dataset.row),
-Number(target.dataset.col)
-);
-
-
-}
-
-
-
-if(touchClone){
-
-touchClone.remove();
-
-touchClone=null;
-
-}
-
-
-
-clearGhost();
-
-
-dragging=false;
-
-
-});
-
-  document.addEventListener("mousemove",function(e){
-
-
-if(!dragging)
-return;
-
-
-
-let target =
-document.elementFromPoint(
-e.clientX,
-e.clientY
-);
-
-
-
-if(target &&
-target.classList.contains("cell")){
-
-
-showGhost(
-Number(target.dataset.row),
-Number(target.dataset.col)
-);
-
-
-}
-
-
-});
-
-
-
-
-
-document.addEventListener("mouseup",function(e){
-
-
-if(!dragging)
-return;
-
-
-
-let target =
-document.elementFromPoint(
-e.clientX,
-e.clientY
-);
-
-
-
-if(target &&
-target.classList.contains("cell")){
-
-
-placePiece(
-Number(target.dataset.row),
-Number(target.dataset.col)
-);
-
-
-}
-
-
-
-clearGhost();
-
-
-dragging=false;
-
-
-});
-  
 updateScore();
 
 }
 
 
 
-
-
-// CREATE BOARD
+// BOARD
 
 function createBoard(){
 
-let boardElement =
-document.getElementById("board");
+let boardDiv=document.getElementById("board");
 
-
-boardElement.innerHTML="";
-
+boardDiv.innerHTML="";
 
 board=[];
 
 
-
 for(let r=0;r<size;r++){
 
-
 board[r]=[];
-
 
 for(let c=0;c<size;c++){
 
 
 let cell=document.createElement("div");
 
-
 cell.className="cell";
 
-
 cell.dataset.row=r;
-
 cell.dataset.col=c;
 
 
-
-cell.addEventListener(
-"dragover",
-function(e){
-
-e.preventDefault();
-
-
-showGhost(
-Number(cell.dataset.row),
-Number(cell.dataset.col)
-);
-
-});
-
-
-
-
-cell.addEventListener(
-"drop",
-function(){
-
-
-clearGhost();
-
-
-placePiece(
-Number(cell.dataset.row),
-Number(cell.dataset.col)
-);
-
-
-});
-
-
-
-boardElement.appendChild(cell);
-
+boardDiv.appendChild(cell);
 
 board[r][c]=0;
 
 
 }
 
-
 }
 
 
@@ -367,34 +87,23 @@ board[r][c]=0;
 
 
 
-
-
-
-// CREATE PIECES
+// PIECES
 
 function generatePieces(){
 
-let area =
-document.getElementById("pieces");
-
+let area=document.getElementById("pieces");
 
 area.innerHTML="";
-
 
 
 for(let i=0;i<3;i++){
 
 
 let shape =
-shapes[
-Math.floor(Math.random()*shapes.length)
-];
+shapes[Math.floor(Math.random()*shapes.length)];
 
 
-
-let piece =
-document.createElement("div");
-
+let piece=document.createElement("div");
 
 piece.className="piece";
 
@@ -405,53 +114,29 @@ drawPiece(piece,shape);
 
 
 
-// PC MOUSE
+piece.addEventListener("mousedown",()=>{
 
-piece.addEventListener("mousedown", function(e){
-
-selectedPiece=shape;
-
-selectedElement=piece;
-
-dragging=true;
-
+startDrag(shape,piece);
 
 });
 
 
-
-// MOBILE TOUCH
-
-piece.addEventListener("touchstart", function(e){
+piece.addEventListener("touchstart",(e)=>{
 
 e.preventDefault();
 
+startDrag(shape,piece);
 
-selectedPiece=shape;
+dragClone=piece.cloneNode(true);
 
-selectedElement=piece;
+dragClone.style.position="fixed";
+dragClone.style.opacity=".8";
+dragClone.style.pointerEvents="none";
 
-dragging=true;
-
-
-
-touchClone = piece.cloneNode(true);
-
-
-touchClone.style.position="fixed";
-
-touchClone.style.pointerEvents="none";
-
-touchClone.style.opacity="0.8";
-
-touchClone.style.zIndex="9999";
+document.body.appendChild(dragClone);
 
 
-document.body.appendChild(touchClone);
-
-
-
-moveTouch(e.touches[0]);
+moveDrag(e.touches[0]);
 
 
 },{passive:false});
@@ -463,40 +148,33 @@ area.appendChild(piece);
 
 }
 
+
 }
 
-// DRAW PIECES
+
 
 function drawPiece(piece,shape){
 
-
 piece.innerHTML="";
 
+piece.style.display="grid";
 
 piece.style.gridTemplateColumns =
-`repeat(${shape[0].length},22px)`;
-
+`repeat(${shape[0].length},25px)`;
 
 
 shape.forEach(row=>{
 
-
 row.forEach(block=>{
 
 
-let square =
-document.createElement("div");
+let b=document.createElement("div");
+
+b.className =
+block ? "miniBlock":"emptyBlock";
 
 
-
-square.className =
-block ?
-"miniBlock":
-"emptyBlock";
-
-
-
-piece.appendChild(square);
+piece.appendChild(b);
 
 
 });
@@ -511,35 +189,234 @@ piece.appendChild(square);
 
 
 
+// DRAG
+
+function startDrag(shape,piece){
+
+selectedPiece=shape;
+
+selectedElement=piece;
+
+dragging=true;
 
 
-// CHECK PLACEMENT
+}
+
+
+
+document.addEventListener("mousemove",(e)=>{
+
+if(dragging){
+
+moveDrag(e);
+
+}
+
+});
+
+
+
+document.addEventListener("mouseup",(e)=>{
+
+if(dragging){
+
+dropPiece(e);
+
+}
+
+});
+
+
+
+
+document.addEventListener("touchmove",(e)=>{
+
+if(dragging){
+
+e.preventDefault();
+
+moveDrag(e.touches[0]);
+
+}
+
+},{passive:false});
+
+
+
+document.addEventListener("touchend",(e)=>{
+
+if(dragging){
+
+dropPiece(e.changedTouches[0]);
+
+}
+
+});
+
+
+
+
+
+
+
+function moveDrag(pos){
+
+
+if(dragClone){
+
+dragClone.style.left =
+pos.clientX-40+"px";
+
+dragClone.style.top =
+pos.clientY-40+"px";
+
+}
+
+
+let target =
+document.elementFromPoint(
+pos.clientX,
+pos.clientY
+);
+
+
+if(target && target.classList.contains("cell")){
+
+
+showGhost(
+Number(target.dataset.row),
+Number(target.dataset.col)
+);
+
+
+}
+
+
+}
+
+
+
+
+
+
+function dropPiece(pos){
+
+
+let target =
+document.elementFromPoint(
+pos.clientX,
+pos.clientY
+);
+
+
+
+if(target && target.classList.contains("cell")){
+
+
+placePiece(
+Number(target.dataset.row),
+Number(target.dataset.col)
+);
+
+
+}
+
+
+
+if(dragClone){
+
+dragClone.remove();
+
+dragClone=null;
+
+}
+
+
+clearGhost();
+
+
+dragging=false;
+
+
+}
+
+
+
+
+
+
+// PLACE
+
+function placePiece(row,col){
+
+if(!selectedPiece)
+return;
+
+
+row -= Math.floor(selectedPiece.length/2);
+
+col -= Math.floor(selectedPiece[0].length/2);
+
+
+
+if(!canPlace(row,col,selectedPiece))
+return;
+
+
+
+for(let r=0;r<selectedPiece.length;r++){
+
+for(let c=0;c<selectedPiece[r].length;c++){
+
+
+if(selectedPiece[r][c]){
+
+board[row+r][col+c]=1;
+
+}
+
+
+}
+
+}
+
+
+score+=10;
+
+removePiece();
+
+clearLines();
+
+refresh();
+
+updateScore();
+
+checkGameOver();
+
+
+}
+
+
+
+
+
 
 function canPlace(row,col,shape){
 
-
 for(let r=0;r<shape.length;r++){
 
-
 for(let c=0;c<shape[r].length;c++){
-
 
 
 if(shape[r][c]){
 
 
 if(
-
-row+r < 0 ||
-
-col+c < 0 ||
-
-row+r >= size ||
-
-col+c >= size ||
-
+row+r<0 ||
+col+c<0 ||
+row+r>=size ||
+col+c>=size ||
 board[row+r][col+c]
-
 ){
 
 return false;
@@ -552,9 +429,7 @@ return false;
 
 }
 
-
 }
-
 
 return true;
 
@@ -564,133 +439,16 @@ return true;
 
 
 
-
-
-
-// PLACE PIECE
-
-function placePiece(row,col){
-
-
-if(!selectedPiece)
-return;
-
-
-
-row -= Math.floor(selectedPiece.length/2);
-
-col -= Math.floor(selectedPiece[0].length/2);
-
-
-
-if(!canPlace(row,col,selectedPiece))
-return;
-
-
-
-
-for(let r=0;r<selectedPiece.length;r++){
-
-
-for(let c=0;c<selectedPiece[r].length;c++){
-
-
-
-if(selectedPiece[r][c]){
-
-
-board[row+r][col+c]=1;
-
-
-}
-
-
-}
-
-
-}
-
-
-
-score += 10;
-
-
-refreshBoard();
-
-
-removePiece();
-
-
-clearLines();
-
-
-updateScore();
-
-
-setTimeout(checkGameOver,100);
-
-
-}
-
-
-
-
-
-
-
-// REMOVE PIECE
-
-function removePiece(){
-
-
-if(selectedElement){
-
-selectedElement.remove();
-
-}
-
-
-
-selectedPiece=null;
-
-selectedElement=null;
-
-
-
-if(
-document.querySelectorAll(".piece").length===0
-){
-
-generatePieces();
-
-}
-
-
-}
-
-
-
-
-
-
-
 // GHOST
 
 function showGhost(row,col){
 
-
 clearGhost();
 
 
-if(!selectedPiece)
-return;
+row-=Math.floor(selectedPiece.length/2);
 
-
-
-row -= Math.floor(selectedPiece.length/2);
-
-col -= Math.floor(selectedPiece[0].length/2);
-
+col-=Math.floor(selectedPiece[0].length/2);
 
 
 if(!canPlace(row,col,selectedPiece))
@@ -700,56 +458,64 @@ return;
 
 for(let r=0;r<selectedPiece.length;r++){
 
-
 for(let c=0;c<selectedPiece[r].length;c++){
 
 
 if(selectedPiece[r][c]){
 
 
-let index =
-(row+r)*size+(col+c);
-
-
-let cell =
-document.querySelectorAll(".cell")[index];
+let cell=document.querySelectorAll(".cell")
+[(row+r)*size+(col+c)];
 
 
 cell.classList.add("ghostBlock");
-
 
 ghostCells.push(cell);
 
 
 }
 
+}
 
 }
 
 
 }
-
-
-}
-
-
 
 
 
 function clearGhost(){
 
+ghostCells.forEach(c=>{
 
-ghostCells.forEach(cell=>{
-
-
-cell.classList.remove("ghostBlock");
-
+c.classList.remove("ghostBlock");
 
 });
 
 
 ghostCells=[];
 
+}
+
+
+
+
+
+// REMOVE
+
+function removePiece(){
+
+selectedElement.remove();
+
+
+if(document.querySelectorAll(".piece").length===0){
+
+generatePieces();
+
+}
+
+
+selectedPiece=null;
 
 }
 
@@ -757,123 +523,66 @@ ghostCells=[];
 
 
 
-
-
-
-// CLEAR LINES
+// CLEAR
 
 function clearLines(){
 
-
-let rows=[];
-
-let cols=[];
-
+let clear=[];
 
 
 for(let r=0;r<size;r++){
 
+if(board[r].every(x=>x)){
 
-let full=true;
+clear.push(["r",r]);
+
+}
+
+}
 
 
 for(let c=0;c<size;c++){
 
-
-if(board[r][c]===0){
-
-full=false;
-
-}
-
-
-}
-
-
-if(full)
-rows.push(r);
-
-
-}
-
-
-
-
-for(let c=0;c<size;c++){
-
-
 let full=true;
-
 
 for(let r=0;r<size;r++){
 
-
-if(board[r][c]===0){
-
-full=false;
+if(!board[r][c]) full=false;
 
 }
 
 
-}
-
-
-if(full)
-cols.push(c);
-
+if(full) clear.push(["c",c]);
 
 }
 
 
 
+clear.forEach(x=>{
 
 
+if(x[0]=="r"){
 
-rows.forEach(r=>{
-
-
-for(let c=0;c<size;c++){
-
-board[r][c]=0;
+for(let c=0;c<size;c++)
+board[x[1]][c]=0;
 
 }
+
+
+else{
+
+for(let r=0;r<size;r++)
+board[r][x[1]]=0;
+
+}
+
+
+score+=100;
 
 
 });
 
 
-
-
-cols.forEach(c=>{
-
-
-for(let r=0;r<size;r++){
-
-board[r][c]=0;
-
-}
-
-
-});
-
-
-
-
-
-if(rows.length || cols.length){
-
-
-score +=
-(rows.length + cols.length) * 100;
-
-
-}
-
-
-
-refreshBoard();
-
-
 }
 
 
@@ -881,102 +590,54 @@ refreshBoard();
 
 
 
+function refresh(){
 
-// UPDATE BOARD
+document.querySelectorAll(".cell")
+.forEach((cell,i)=>{
 
-function refreshBoard(){
-
-
-let cells =
-document.querySelectorAll(".cell");
-
+let r=Math.floor(i/size);
+let c=i%size;
 
 
-for(let r=0;r<size;r++){
-
-
-for(let c=0;c<size;c++){
-
-
-
-let index =
-r*size+c;
-
-
-
-cells[index]
-.classList.toggle(
+cell.classList.toggle(
 "placedBlock",
 board[r][c]
 );
 
 
-
-}
-
-
-}
-
+});
 
 }
 
 
 
 
-
-
-
-
-// GAME OVER
 
 function checkGameOver(){
 
-
-let pieces =
-document.querySelectorAll(".piece");
+let pieces=document.querySelectorAll(".piece");
 
 
-
-for(let piece of pieces){
-
+for(let p of pieces){
 
 for(let r=0;r<size;r++){
 
-
 for(let c=0;c<size;c++){
 
-
-
-if(canPlace(r,c,piece.shape)){
-
-
+if(canPlace(r,c,p.shape))
 return;
 
-
 }
 
-
 }
-
-
-}
-
 
 }
 
 
 
+document.getElementById("finalScore").innerText=score;
 
-
-document
-.getElementById("finalScore")
-.innerText=score;
-
-
-
-document
-.getElementById("gameOverScreen")
-.classList.remove("hidden");
+document.getElementById("gameOverScreen").classList.remove("hidden");
 
 
 }
@@ -984,96 +645,46 @@ document
 
 
 
-
-
-
-
-// RESTART
 
 function restartGame(){
 
+document.getElementById("gameOverScreen").classList.add("hidden");
 
-document
-.getElementById("gameOverScreen")
-.classList.add("hidden");
-
-
-score=0;
-
-
-createBoard();
-
-generatePieces();
-
-updateScore();
-
+startGame();
 
 }
 
 
-
-
-
-
-
-// SCORE
 
 function updateScore(){
 
-document
-.getElementById("score")
-.innerText=score;
+document.getElementById("score").innerText=score;
 
 }
 
 
-
-
-
-
-
-// SETTINGS
 
 function openSettings(){
 
+homeScreen.classList.add("hidden");
 
-document
-.getElementById("homeScreen")
-.classList.add("hidden");
-
-
-
-document
-.getElementById("settingsScreen")
-.classList.remove("hidden");
-
+settingsScreen.classList.remove("hidden");
 
 }
-
-
 
 
 
 function goHome(){
 
+settingsScreen.classList.add("hidden");
 
-document
-.getElementById("settingsScreen")
-.classList.add("hidden");
+gameScreen.classList.add("hidden");
 
-
-document
-.getElementById("gameScreen")
-.classList.add("hidden");
-
-
-
-document
-.getElementById("homeScreen")
-.classList.remove("hidden");
-
+homeScreen.classList.remove("hidden");
 
 }
+
+
 
 function openPrivacy(){
 
