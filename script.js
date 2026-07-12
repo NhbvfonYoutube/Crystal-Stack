@@ -1,5 +1,8 @@
 let score = 0;
 
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
 const size = 8;
 
 let board = [];
@@ -193,12 +196,18 @@ piece.appendChild(b);
 
 function startDrag(shape,piece){
 
-selectedPiece=shape;
+selectedPiece = shape;
 
-selectedElement=piece;
+selectedElement = piece;
 
-dragging=true;
+dragging = true;
 
+
+// center the piece correctly
+
+dragOffsetX = Math.floor(shape[0].length / 2);
+
+dragOffsetY = Math.floor(shape.length / 2);
 
 }
 
@@ -353,14 +362,18 @@ if(!selectedPiece)
 return;
 
 
-row -= Math.floor(selectedPiece.length/2);
+row -= dragOffsetY;
 
-col -= Math.floor(selectedPiece[0].length/2);
+col -= dragOffsetX;
 
 
+if(!canPlace(row,col,selectedPiece)){
 
-if(!canPlace(row,col,selectedPiece))
+clearGhost();
+
 return;
+
+}
 
 
 
@@ -451,9 +464,9 @@ function showGhost(row,col){
 clearGhost();
 
 
-row-=Math.floor(selectedPiece.length/2);
+row -= dragOffsetY;
 
-col-=Math.floor(selectedPiece[0].length/2);
+col -= dragOffsetX;
 
 
 if(!canPlace(row,col,selectedPiece))
