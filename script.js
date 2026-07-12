@@ -1,28 +1,38 @@
 let score = 0;
-
-let dragOffsetX = 0;
-let dragOffsetY = 0;
+let board = [];
+let selectedPiece = null;
+let selectedElement = null;
+let dragging = false;
+let ghost = [];
+let soundOn = true;
 
 const size = 8;
 
-let board = [];
+const sounds = {
+    place: new Audio("place.mp3"),
+    clear: new Audio("clear.mp3"),
+    gameover: new Audio("gameover.mp3"),
+    click: new Audio("click.mp3")
+};
 
-let selectedPiece = null;
-let selectedElement = null;
 
-let dragging = false;
-let ghostCells = [];
-let dragClone = null;
+function sfx(name){
+    if(soundOn && sounds[name]){
+        sounds[name].currentTime = 0;
+        sounds[name].play().catch(()=>{});
+    }
+}
+
 
 
 const shapes = [
-[[1,1,1,1]],
-[[1,1],[1,1]],
-[[1,0],[1,1]],
-[[1,1,1],[0,1,0]],
-[[1,1,0],[0,1,1]],
-[[1],[1],[1]],
-[[1,1,1]]
+    [[1,1,1,1]],
+    [[1,1],[1,1]],
+    [[1,0],[1,0],[1,1]],
+    [[1,1,1],[0,1,0]],
+    [[1,1,0],[0,1,1]],
+    [[1],[1],[1]],
+    [[1,1,1]]
 ];
 
 
@@ -31,160 +41,125 @@ const shapes = [
 
 function startGame(){
 
-document.getElementById("homeScreen").classList.add("hidden");
+    sfx("click");
 
-document.getElementById("gameScreen").classList.remove("hidden");
+    homeScreen.classList.add("hidden");
+    settingsScreen.classList.add("hidden");
 
-document.getElementById("gameOverScreen").classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+    gameOverScreen.classList.add("hidden");
 
-score=0;
+    score = 0;
 
-createBoard();
+    createBoard();
+    generatePieces();
 
-generatePieces();
-
-updateScore();
-
+    updateScore();
 }
 
 
 
-// BOARD
+
 
 function createBoard(){
 
-let boardDiv=document.getElementById("board");
+    board = [];
 
-boardDiv.innerHTML="";
-
-board=[];
-
-
-for(let r=0;r<size;r++){
-
-board[r]=[];
-
-for(let c=0;c<size;c++){
+    boardDiv = document.getElementById("board");
+    boardDiv.innerHTML = "";
 
 
-let cell=document.createElement("div");
+    for(let r=0;r<size;r++){
 
-cell.className="cell";
+        board[r]=[];
 
-cell.dataset.row=r;
-cell.dataset.col=c;
+        for(let c=0;c<size;c++){
 
+            let cell=document.createElement("div");
 
-boardDiv.appendChild(cell);
+            cell.className="cell";
 
-board[r][c]=0;
+            cell.dataset.row=r;
+            cell.dataset.col=c;
 
+            boardDiv.appendChild(cell);
 
-}
-
-}
-
-
+            board[r][c]=0;
+        }
+    }
 }
 
 
 
 
-// PIECES
+// CREATE PIECES
 
 function generatePieces(){
 
-let area=document.getElementById("pieces");
+    let area=document.getElementById("pieces");
 
-area.innerHTML="";
-
-
-for(let i=0;i<3;i++){
+    area.innerHTML="";
 
 
-let shape =
-shapes[Math.floor(Math.random()*shapes.length)];
+    for(let i=0;i<3;i++){
+
+        let shape =
+        shapes[Math.floor(Math.random()*shapes.length)];
 
 
-let piece=document.createElement("div");
+        let piece=document.createElement("div");
 
-piece.className="piece";
+        piece.className="piece";
 
-piece.shape=shape;
-
-
-drawPiece(piece,shape);
+        piece.shape=shape;
 
 
-
-piece.addEventListener("mousedown",()=>{
-
-startDrag(shape,piece);
-
-});
+        drawPiece(piece,shape);
 
 
-piece.addEventListener("touchstart",(e)=>{
-
-e.preventDefault();
-
-startDrag(shape,piece);
-
-dragClone=piece.cloneNode(true);
-
-dragClone.style.position="fixed";
-dragClone.style.opacity=".8";
-dragClone.style.pointerEvents="none";
-
-document.body.appendChild(dragClone);
+        piece.onmousedown=()=>grab(piece,shape);
 
 
-moveDrag(e.touches[0]);
+        piece.ontouchstart=(e)=>{
+
+            e.preventDefault();
+
+            grab(piece,shape);
+
+        };
 
 
-},{passive:false});
+        area.appendChild(piece);
 
-
-
-area.appendChild(piece);
-
-
+    }
 }
 
 
-}
 
 
 
 function drawPiece(piece,shape){
 
-piece.innerHTML="";
+    piece.innerHTML="";
 
-piece.style.display="grid";
-
-piece.style.gridTemplateColumns =
-`repeat(${shape[0].length},25px)`;
+    piece.style.gridTemplateColumns =
+    `repeat(${shape[0].length},22px)`;
 
 
-shape.forEach(row=>{
+    shape.forEach(row=>{
 
-row.forEach(block=>{
+        row.forEach(block=>{
 
+            let b=document.createElement("div");
 
-let b=document.createElement("div");
+            b.className =
+            block ? "miniBlock":"emptyBlock";
 
-b.className =
-block ? "miniBlock":"emptyBlock";
+            piece.appendChild(b);
 
+        });
 
-piece.appendChild(b);
-
-
-});
-
-
-});
-
+    });
 
 }
 
@@ -192,114 +167,77 @@ piece.appendChild(b);
 
 
 
-// DRAG
+// DRAG START
 
-function startDrag(shape,piece){
+function grab(piece,shape){
 
-selectedPiece = shape;
-
-selectedElement = piece;
-
-dragging = true;
-
-
-// center the piece correctly
-
-dragOffsetX = Math.floor(shape[0].length / 2);
-
-dragOffsetY = Math.floor(shape.length / 2);
+    selectedPiece = shape;
+    selectedElement = piece;
+    dragging = true;
 
 }
 
 
 
-document.addEventListener("mousemove",(e)=>{
 
-if(dragging){
 
-moveDrag(e);
+document.addEventListener("mousemove",e=>{
 
-}
+    if(dragging)
+        move(e);
 
 });
 
 
 
-document.addEventListener("mouseup",(e)=>{
+document.addEventListener("touchmove",e=>{
 
-if(dragging){
+    if(dragging){
 
-dropPiece(e);
+        e.preventDefault();
 
-}
+        move(e.touches[0]);
 
-});
-
-
-
-
-document.addEventListener("touchmove",(e)=>{
-
-if(dragging){
-
-e.preventDefault();
-
-moveDrag(e.touches[0]);
-
-}
+    }
 
 },{passive:false});
 
 
 
-document.addEventListener("touchend",(e)=>{
+document.addEventListener("mouseup",e=>{
 
-if(dragging){
-
-dropPiece(e.changedTouches[0]);
-
-}
+    if(dragging)
+        drop(e);
 
 });
 
 
 
+document.addEventListener("touchend",e=>{
+
+    if(dragging)
+        drop(e.changedTouches[0]);
+
+});
+// DRAG MOVE
+
+function move(pos){
+
+    let cell =
+    document.elementFromPoint(
+        pos.clientX,
+        pos.clientY
+    );
 
 
+    if(cell && cell.classList.contains("cell")){
 
+        showGhost(
+            Number(cell.dataset.row),
+            Number(cell.dataset.col)
+        );
 
-function moveDrag(pos){
-
-
-if(dragClone){
-
-dragClone.style.left =
-pos.clientX-40+"px";
-
-dragClone.style.top =
-pos.clientY-40+"px";
-
-}
-
-
-let target =
-document.elementFromPoint(
-pos.clientX,
-pos.clientY
-);
-
-
-if(target && target.classList.contains("cell")){
-
-
-showGhost(
-Number(target.dataset.row),
-Number(target.dataset.col)
-);
-
-
-}
-
+    }
 
 }
 
@@ -307,149 +245,28 @@ Number(target.dataset.col)
 
 
 
+function drop(pos){
 
-function dropPiece(pos){
+    let cell =
+    document.elementFromPoint(
+        pos.clientX,
+        pos.clientY
+    );
 
 
-let target =
-document.elementFromPoint(
-pos.clientX,
-pos.clientY
-);
+    if(cell && cell.classList.contains("cell")){
 
+        place(
+            Number(cell.dataset.row),
+            Number(cell.dataset.col)
+        );
 
+    }
 
-if(target && target.classList.contains("cell")){
 
+    clearGhost();
 
-placePiece(
-Number(target.dataset.row),
-Number(target.dataset.col)
-);
-
-
-}
-
-
-
-if(dragClone){
-
-dragClone.remove();
-
-dragClone=null;
-
-}
-
-
-clearGhost();
-
-
-dragging=false;
-
-
-}
-
-
-
-
-
-
-// PLACE
-
-function placePiece(row,col){
-
-if(!selectedPiece)
-return;
-
-
-row -= dragOffsetY;
-
-col -= dragOffsetX;
-
-
-if(!canPlace(row,col,selectedPiece)){
-
-clearGhost();
-
-return;
-
-}
-
-
-
-for(let r=0;r<selectedPiece.length;r++){
-
-for(let c=0;c<selectedPiece[r].length;c++){
-
-
-if(selectedPiece[r][c]){
-
-board[row+r][col+c]=1;
-
-}
-
-
-}
-
-}
-
-
-score+=10;
-
-refresh();
-
-  removePiece();
-
-clearLines();
-
-updateScore();
-
-
-setTimeout(function(){
-
-    checkGameOver();
-
-},100);
-
-
-}
-
-
-
-
-
-
-function canPlace(row,col,shape){
-
-for(let r=0;r<shape.length;r++){
-
-for(let c=0;c<shape[r].length;c++){
-
-
-if(shape[r][c]){
-
-
-if(
-row+r<0 ||
-col+c<0 ||
-row+r>=size ||
-col+c>=size ||
-board[row+r][col+c]
-){
-
-return false;
-
-}
-
-
-}
-
-
-}
-
-}
-
-return true;
+    dragging=false;
 
 }
 
@@ -461,42 +278,35 @@ return true;
 
 function showGhost(row,col){
 
-clearGhost();
+    clearGhost();
 
 
-row -= dragOffsetY;
-
-col -= dragOffsetX;
-
-
-if(!canPlace(row,col,selectedPiece))
-return;
+    row -= Math.floor(selectedPiece.length/2);
+    col -= Math.floor(selectedPiece[0].length/2);
 
 
-
-for(let r=0;r<selectedPiece.length;r++){
-
-for(let c=0;c<selectedPiece[r].length;c++){
+    if(!canPlace(row,col,selectedPiece))
+        return;
 
 
-if(selectedPiece[r][c]){
+    for(let r=0;r<selectedPiece.length;r++){
+
+        for(let c=0;c<selectedPiece[r].length;c++){
+
+            if(selectedPiece[r][c]){
+
+                let cell =
+                document.querySelectorAll(".cell")
+                [(row+r)*size+(col+c)];
 
 
-let cell=document.querySelectorAll(".cell")
-[(row+r)*size+(col+c)];
+                cell.classList.add("ghostBlock");
 
+                ghost.push(cell);
 
-cell.classList.add("ghostBlock");
-
-ghostCells.push(cell);
-
-
-}
-
-}
-
-}
-
+            }
+        }
+    }
 
 }
 
@@ -504,14 +314,11 @@ ghostCells.push(cell);
 
 function clearGhost(){
 
-ghostCells.forEach(c=>{
+    ghost.forEach(c=>
+        c.classList.remove("ghostBlock")
+    );
 
-c.classList.remove("ghostBlock");
-
-});
-
-
-ghostCells=[];
+    ghost=[];
 
 }
 
@@ -519,98 +326,155 @@ ghostCells=[];
 
 
 
-// REMOVE
+// CHECK
 
-function removePiece(){
+function canPlace(row,col,shape){
 
-    if(selectedElement){
-        selectedElement.remove();
-    }
+    for(let r=0;r<shape.length;r++){
 
+        for(let c=0;c<shape[r].length;c++){
 
-    selectedPiece = null;
-    selectedElement = null;
+            if(shape[r][c]){
 
+                if(
+                    row+r<0 ||
+                    col+c<0 ||
+                    row+r>=size ||
+                    col+c>=size ||
+                    board[row+r][col+c]
+                ){
+                    return false;
+                }
 
-
-    setTimeout(function(){
-
-        let remaining =
-        document.querySelectorAll(".piece").length;
-
-
-        if(remaining === 0){
-
-            generatePieces();
+            }
 
         }
 
-    }, 50);
+    }
+
+    return true;
 
 }
 
-// CLEAR
+
+
+
+
+// PLACE
+
+function place(row,col){
+
+    row -= Math.floor(selectedPiece.length/2);
+    col -= Math.floor(selectedPiece[0].length/2);
+
+
+    if(!canPlace(row,col,selectedPiece))
+        return;
+
+
+    for(let r=0;r<selectedPiece.length;r++){
+
+        for(let c=0;c<selectedPiece[r].length;c++){
+
+            if(selectedPiece[r][c])
+                board[row+r][col+c]=1;
+
+        }
+
+    }
+
+
+    sfx("place");
+
+    score+=10;
+
+
+    selectedElement.remove();
+
+    selectedPiece=null;
+
+
+    clearLines();
+
+    refresh();
+
+    updateScore();
+
+
+    if(document.querySelectorAll(".piece").length===0)
+        generatePieces();
+
+
+    setTimeout(checkGameOver,100);
+
+}
+
+
+
+
+
+// CLEAR LINES
 
 function clearLines(){
 
-let clear=[];
+    let rows=[];
+    let cols=[];
 
 
-for(let r=0;r<size;r++){
+    for(let r=0;r<size;r++){
 
-if(board[r].every(x=>x)){
+        if(board[r].every(x=>x))
+            rows.push(r);
 
-clear.push(["r",r]);
+    }
+
+
+    for(let c=0;c<size;c++){
+
+        let full=true;
+
+        for(let r=0;r<size;r++){
+
+            if(!board[r][c])
+                full=false;
+
+        }
+
+
+        if(full)
+            cols.push(c);
+
+    }
+
+
+
+    if(rows.length || cols.length){
+
+        sfx("clear");
+
+        score +=
+        (rows.length+cols.length)*100;
+
+    }
+
+
+
+    rows.forEach(r=>{
+
+        for(let c=0;c<size;c++)
+            board[r][c]=0;
+
+    });
+
+
+    cols.forEach(c=>{
+
+        for(let r=0;r<size;r++)
+            board[r][c]=0;
+
+    });
 
 }
-
-}
-
-
-for(let c=0;c<size;c++){
-
-let full=true;
-
-for(let r=0;r<size;r++){
-
-if(!board[r][c]) full=false;
-
-}
-
-
-if(full) clear.push(["c",c]);
-
-}
-
-
-
-clear.forEach(x=>{
-
-
-if(x[0]=="r"){
-
-for(let c=0;c<size;c++)
-board[x[1]][c]=0;
-
-}
-
-
-else{
-
-for(let r=0;r<size;r++)
-board[r][x[1]]=0;
-
-}
-
-
-score+=100;
-
-
-});
-
-
-}
-
 
 
 
@@ -618,53 +482,57 @@ score+=100;
 
 function refresh(){
 
-document.querySelectorAll(".cell")
-.forEach((cell,i)=>{
+    document.querySelectorAll(".cell")
+    .forEach((cell,i)=>{
 
-let r=Math.floor(i/size);
-let c=i%size;
-
-
-cell.classList.toggle(
-"placedBlock",
-board[r][c]
-);
+        let r=Math.floor(i/size);
+        let c=i%size;
 
 
-});
+        cell.classList.toggle(
+            "placedBlock",
+            board[r][c]
+        );
+
+    });
 
 }
 
 
 
 
+
+// GAME OVER
 
 function checkGameOver(){
 
-let pieces=document.querySelectorAll(".piece");
+    let pieces =
+    document.querySelectorAll(".piece");
 
 
-for(let p of pieces){
+    for(let p of pieces){
 
-for(let r=0;r<size;r++){
+        for(let r=0;r<size;r++){
 
-for(let c=0;c<size;c++){
+            for(let c=0;c<size;c++){
 
-if(canPlace(r,c,p.shape))
-return;
+                if(canPlace(r,c,p.shape))
+                    return;
 
-}
+            }
 
-}
+        }
 
-}
+    }
 
 
 
-document.getElementById("finalScore").innerText=score;
+    sfx("gameover");
 
-document.getElementById("gameOverScreen").classList.remove("hidden");
 
+    finalScore.innerText=score;
+
+    gameOverScreen.classList.remove("hidden");
 
 }
 
@@ -674,27 +542,40 @@ document.getElementById("gameOverScreen").classList.remove("hidden");
 
 function restartGame(){
 
-document.getElementById("gameOverScreen").classList.add("hidden");
+    gameOverScreen.classList.add("hidden");
 
-startGame();
+    startGame();
 
 }
 
 
+
+
+
+// SCORE
 
 function updateScore(){
 
-document.getElementById("score").innerText=score;
+    scoreDisplay =
+    document.getElementById("score");
+
+    scoreDisplay.innerText=score;
 
 }
 
 
 
+
+
+// SETTINGS
+
 function openSettings(){
 
-homeScreen.classList.add("hidden");
+    sfx("click");
 
-settingsScreen.classList.remove("hidden");
+    homeScreen.classList.add("hidden");
+
+    settingsScreen.classList.remove("hidden");
 
 }
 
@@ -702,11 +583,11 @@ settingsScreen.classList.remove("hidden");
 
 function goHome(){
 
-settingsScreen.classList.add("hidden");
+    settingsScreen.classList.add("hidden");
 
-gameScreen.classList.add("hidden");
+    gameScreen.classList.add("hidden");
 
-homeScreen.classList.remove("hidden");
+    homeScreen.classList.remove("hidden");
 
 }
 
@@ -714,12 +595,24 @@ homeScreen.classList.remove("hidden");
 
 function openPrivacy(){
 
-window.location.href="privacy.html";
+    window.location.href="privacy.html";
 
 }
 
+
+
 function openTerms(){
 
-window.location.href="terms.html";
+    window.location.href="terms.html";
+
+}
+
+
+
+function toggleSound(){
+
+    soundOn=!soundOn;
+
+    sfx("click");
 
 }
